@@ -15,11 +15,15 @@ const ChatHistory = React.forwardRef<HTMLDivElement>((props, ref) => {
       </div>
 
       <div className="flex justify-end">
-        <div className="bg-orange-500 text-white p-3 rounded-lg max-w-xs relative">
-          <p>Okay, it's almost ready.</p>
-          <div className="flex items-center justify-end text-xs text-orange-200 mt-1">
+        <div className="flex flex-col items-end max-w-xs">
+          {/* Bubble */}
+          <div className="bg-orange-500 text-white px-5 py-3.5 rounded-3xl rounded-br-none">
+            <p>Okay, it's almost ready.</p>
+          </div>
+          {/* Timestamp & Check outside bubble */}
+          <div className="flex items-center justify-end text-xs text-gray-500 mt-1">
             <span>5:12 PM</span>
-            <Check size={16} className="ml-1" />
+            <Check size={14} className="ml-1" />
           </div>
         </div>
       </div>
@@ -32,8 +36,8 @@ const ChatHistory = React.forwardRef<HTMLDivElement>((props, ref) => {
           height={40}
           className="rounded-full"
         />
-        <div className="flex flex-col gap-2">
-          <div className="bg-gray-200 p-3 rounded-lg max-w-xs">
+        <div className="flex flex-col gap-2 max-w-xs">
+          <div className="bg-gray-200 px-5 py-3.5 rounded-3xl rounded-bl-none">
             <p>How about these pictures?</p>
           </div>
 
@@ -62,15 +66,24 @@ const ChatHistory = React.forwardRef<HTMLDivElement>((props, ref) => {
               className="rounded-lg object-cover w-full h-full"
             />
           </div>
+
+          <div className="flex items-center justify-start text-xs text-gray-500 mt-1">
+            <span>5:12 PM</span>
+            <Check size={14} className="ml-1" />
+          </div>
         </div>
       </div>
 
       <div className="flex justify-end">
-        <div className="bg-orange-500 text-white p-3 rounded-lg max-w-xs relative">
-          <p>Looks cool, can you find more options?</p>
-          <div className="flex items-center justify-end text-xs text-orange-200 mt-1">
+        <div className="flex flex-col items-end max-w-xs">
+          {/* Bubble */}
+          <div className="bg-orange-500 text-white px-5 py-3.5 rounded-3xl rounded-br-none">
+            <p>Looks cool, can you find more options?</p>
+          </div>
+          {/* Timestamp & Check outside bubble */}
+          <div className="flex items-center justify-end text-xs text-gray-500 mt-1">
             <span>5:12 PM</span>
-            <Check size={16} className="ml-1" />
+            <Check size={14} className="ml-1" />
           </div>
         </div>
       </div>
@@ -83,24 +96,13 @@ const ChatHistory = React.forwardRef<HTMLDivElement>((props, ref) => {
           height={40}
           className="rounded-full"
         />
-        <div className="flex flex-col gap-2">
-          <div className="bg-gray-200 p-3 rounded-lg max-w-xs">
-            <p>Sure, but I'm busy right now.</p>
+        <div className="flex flex-col gap-2 max-w-xs">
+          <div className="bg-gray-200 px-5 py-3.5 rounded-2xl rounded-bl-none">
+            <p>How about these pictures?</p>
           </div>
-
-          <div className="bg-gray-200 p-2 rounded-lg max-w-xs flex items-center gap-2">
-            <PlayCircle className="text-gray-600" />
-            <div className="flex items-center gap-0.5 h-6">
-              <span className="w-0.5 h-full bg-gray-400 rounded-full"></span>
-              <span className="w-0.5 h-2/5 bg-gray-400 rounded-full"></span>
-              <span className="w-0.5 h-4/5 bg-gray-400 rounded-full"></span>
-              <span className="w-0.5 h-3/5 bg-gray-400 rounded-full"></span>
-              <span className="w-0.5 h-full bg-gray-400 rounded-full"></span>
-              <span className="w-0.5 h-1/2 bg-gray-400 rounded-full"></span>
-              <span className="w-0.5 h-full bg-gray-400 rounded-full"></span>
-              <span className="w-0.5 h-4/5 bg-gray-400 rounded-full"></span>
-            </div>
-            <span className="text-sm text-gray-600">0:24</span>
+          <div className="flex items-center justify-start text-xs text-gray-500 mt-1">
+            <span>5:12 PM</span>
+            <Check size={14} className="ml-1" />
           </div>
         </div>
       </div>

@@ -24,10 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${montserrat.variable} antialiased bg-slate-100 flex gap-2`}
+        className={`${montserrat.variable} antialiased bg-slate-100 flex flex-col md:flex-row gap-2`}
       >
         <Sidebar />
-        <main className="w-3/4 h-screen pe-2 py-2 flex flex-col">
+        <main className="w-full md:w-3/4 h-screen pe-2 py-2 flex flex-col">
           <Header />
           <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
         </main>
