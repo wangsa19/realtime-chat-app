@@ -29,17 +29,24 @@ const Sidebar: FC<SidebarProps> = ({}) => {
                 alt="Avatar"
                 width={40}
                 height={40}
-                className="rounded-full"
+                className="rounded-full flex-none"
               />
-              <div className="flex flex-col overflow-hidden">
-                <h6 className="font-medium text-base">John Doe</h6>
-                <p className="text-xs truncate">Hey there, I'm having trouble open...</p>
+
+              <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                <h6 className="font-medium text-base truncate">John Doe</h6>
+                <p className="text-xs text-muted-foreground truncate">
+                  Hey there, I'm having trouble open...
+                </p>
               </div>
-              <div className="flex flex-col items-end gap-1">
+
+              <div className="flex flex-col items-end gap-1 flex-none">
                 <h6 className="font-normal text-sm text-secondary-foreground whitespace-nowrap">
                   11:24 AM
                 </h6>
-                <Badge variant="default" className="w-5 h-5 text-xs rounded-full">
+                <Badge
+                  variant="default"
+                  className="w-5 h-5 text-xs rounded-full"
+                >
                   3
                 </Badge>
               </div>
