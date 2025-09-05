@@ -5,7 +5,7 @@ import { Check, PlayCircle } from "lucide-react";
 const ChatHistory = React.forwardRef<HTMLDivElement>((props, ref) => {
   return (
     <section
-      className="flex-1 overflow-y-auto p-6 space-y-6 bg-white rounded-xl shadow-md border border-slate-200"
+      className="flex-1 overflow-y-auto p-6 space-y-6 bg-white rounded-xl shadow-md border border-slate-200 scrollbar-custom"
       ref={ref}
     >
       <div className="flex justify-center">

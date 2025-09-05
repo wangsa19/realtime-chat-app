@@ -121,3 +121,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background: theme(colors.orange.400);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: theme(colors.orange.500);
+    background-clip: content-box;
+  }
+}
