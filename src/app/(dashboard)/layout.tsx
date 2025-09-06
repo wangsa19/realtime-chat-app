@@ -4,8 +4,9 @@ import "../globals.css";
 import { Input } from "@/components/ui/input";
 import { PlusIcon } from "lucide-react";
 import Image from "next/image";
-import Sidebar from "@/components/sidebar/sidebar";
-import Header from "@/components/header/header";
+import Sidebar from "@/components/layouts/Sidebar/";
+import Header from "@/components/layouts/Header/";
+import Providers from "../providers";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -27,9 +28,11 @@ export default function RootLayout({
         className={`${montserrat.variable} antialiased bg-slate-100 flex flex-col md:flex-row gap-2`}
       >
         <Sidebar />
-        <main className="w-full md:w-3/4 h-screen pe-2 py-2 flex flex-col">
+        <main className="w-full md:w-3/4 h-screen pe-2 py-2 flex flex-col gap-2">
           <Header />
-          <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Providers>{children}</Providers>
+          </div>
         </main>
       </body>
     </html>

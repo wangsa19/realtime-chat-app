@@ -1,5 +1,5 @@
-import { PrismaClient, Prisma } from "../app/generated/prisma";
-import bcrypt from "bcrypt";
+import { PrismaClient, Prisma } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +9,6 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 export async function main() {
-  // Buat dua user
   const alice = await prisma.user.create({
     data: {
       name: "Alice",
@@ -26,7 +25,6 @@ export async function main() {
     },
   });
 
-  // Buat pesan dari Alice ke Bob
   await prisma.messages.createMany({
     data: [
       {

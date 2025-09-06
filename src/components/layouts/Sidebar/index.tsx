@@ -3,8 +3,8 @@
 import { PlusIcon } from "lucide-react";
 import Image from "next/image";
 import React, { FC } from "react";
-import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface SidebarProps {}
 
