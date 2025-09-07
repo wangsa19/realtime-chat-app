@@ -1,12 +1,14 @@
 import { Server } from "socket.io";
 import type { NextApiRequest } from "next";
+import prisma from "@/lib/prisma";
 import { NextApiResponseWithSocket } from "@/app/typings/platform";
+
+const onlineUsers = new Map<string, string>();
 
 export default function SocketHandler(
   _req: NextApiRequest,
   res: NextApiResponseWithSocket
 ) {
-  // Cek jika server socket.io sudah berjalan
   if (res.socket.server.io) {
     console.log("Socket server already running");
     res.end();
@@ -19,22 +21,50 @@ export default function SocketHandler(
     addTrailingSlash: false,
   });
 
-  // Simpan instance io ke server agar bisa diakses lagi
   res.socket.server.io = io;
 
-  // Handler utama untuk koneksi client
   io.on("connection", (socket) => {
-    console.log(`Client connected: ${socket.id}`);
+    socket.on("user:online", (userId: string) => {
+      if (userId) {
+        onlineUsers.set(userId, socket.id);
+        console.log(`User ${userId} is online with socket ${socket.id}`);
+      }
+    });
 
-    // Handler untuk menerima pesan dari client
-    socket.on("message:send", (data) => {
-      // Broadcast pesan ke SEMUA client yang terhubung
-      console.log("Broadcasting message:", data);
-      io.emit("message:receive", data);
+    socket.on("private:send", async (data) => {
+      const { receiverId, message } = data;
+
+      try {
+        await prisma.messages.create({
+          data: {
+            sender_id: Number(message.user.id),
+            receiver_id: Number(receiverId),
+            content: message.text,
+            timestamp: new Date(message.id),
+          },
+        });
+        console.log("Message saved to DB");
+      } catch (error) {
+        console.error("Failed to save message to DB:", error);
+      }
+
+      const receiverSocketId = onlineUsers.get(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("private:receive", message);
+        socket.emit("private:receive", message);
+      } else {
+        console.log(`User ${receiverId} is not online.`);
+      }
     });
 
     socket.on("disconnect", () => {
       console.log(`Client disconnected: ${socket.id}`);
+      for (let [userId, socketId] of onlineUsers.entries()) {
+        if (socketId === socket.id) {
+          onlineUsers.delete(userId);
+          break;
+        }
+      }
     });
   });
 

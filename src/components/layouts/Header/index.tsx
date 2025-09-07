@@ -1,44 +1,64 @@
+"use client";
+
 import Image from "next/image";
 import React, { FC } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MoreHorizontal, SearchIcon } from "lucide-react";
+import { LogOut, Menu, MoreHorizontal, SearchIcon } from "lucide-react";
+import { ContactUser } from "../Sidebar";
 
-interface HeaderProps {}
-const Header: FC<HeaderProps> = ({}) => {
+interface HeaderProps {
+  contact: ContactUser;
+  onMenuClick: () => void;
+}
+
+const Header: FC<HeaderProps> = ({ contact, onMenuClick }) => {
   return (
-    <header className="w-full h-auto md:h-24 rounded-xl bg-transparent">
-      <section className="bg-white w-full h-full rounded-xl shadow-md border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 p-4 md:px-6">
-        {/* Left */}
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Image
-            src="https://ui-avatars.com/api/?name=John+Doe"
-            alt="Avatar"
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
-          <h6 className="font-semibold text-base md:text-lg">John Doe</h6>
+    <header className="w-full rounded-xl bg-transparent">
+      <section className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-md md:px-6">
+        {/* Left Side */}
+        <div className="flex items-center gap-3">
+          {/* Hamburger Button for mobile */}
+          <Button
+            onClick={onMenuClick}
+            variant="ghost"
+            size="icon"
+            className="shrink-0 md:hidden"
+          >
+            <Menu />
+          </Button>
+          <div className="flex items-center gap-3">
+            <Image
+              src={`https://ui-avatars.com/api/?name=${
+                contact.name || contact.email
+              }`}
+              alt={contact.name || "Avatar"}
+              width={48}
+              height={48}
+              className="rounded-full"
+            />
+            <h6 className="font-semibold text-lg">{contact.name}</h6>
+          </div>
         </div>
 
-        {/* Right */}
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+        {/* Right Side */}
+        <div className="items-center gap-2 flex">
           <Button
-            className="font-medium text-sm md:text-base rounded-full px-4 md:w-24 h-10 md:h-12"
+            className="h-12 rounded-full px-4 font-medium md:w-24"
             variant={"outline"}
           >
             Profile
           </Button>
-          <Button className="font-medium text-sm md:text-base rounded-full px-4 md:w-24 h-10 md:h-12 bg-black hover:bg-black/90">
+          <Button className="h-12 rounded-full bg-black px-4 font-medium hover:bg-black/90 md:w-24">
             Call
           </Button>
           <div className="h-5">
             <Separator orientation="vertical" />
           </div>
           <div className="flex gap-2">
-            <SearchIcon className="w-5 h-5 md:w-6 md:h-6" />
-            <MoreHorizontal className="w-5 h-5 md:w-6 md:h-6" />
+            <SearchIcon className="h-6 w-6" />
+            <MoreHorizontal className="h-6 w-6" />
           </div>
         </div>
       </section>

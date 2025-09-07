@@ -14,12 +14,27 @@ enum MessageStatus {
 }
 
 model User {
-    id               Int        @id @default(autoincrement())
-    name             String?
-    email            String     @unique
-    password         String
-    sentMessages     Messages[] @relation("SenderRelation")
-    receivedMessages Messages[] @relation("ReceiverRelation")
+    id                  Int        @id @default(autoincrement())
+    name                String?
+    email               String     @unique
+    phoneNumber         String?    @unique
+    password            String
+    sentMessages        Messages[] @relation("SenderRelation")
+    receivedMessages    Messages[] @relation("ReceiverRelation")
+    contactsAsRequester Contact[]  @relation("Requester")
+    contactsAsAddressee Contact[]  @relation("Addressee")
+}
+
+model Contact {
+    id          Int      @id @default(autoincrement())
+    requesterId Int
+    addresseeId Int
+    createdAt   DateTime @default(now())
+
+    requester User @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    addressee User @relation("Addressee", fields: [addresseeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([requesterId, addresseeId])
 }
 
 model Messages {
