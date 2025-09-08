@@ -30,6 +30,7 @@ export default function Home() {
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+  const [contacts, setContacts] = useState<ContactUser[]>([]);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -150,13 +151,13 @@ export default function Home() {
           onSelectContact={handleSelectContact}
           selectedContactId={selectedContact?.id || null}
         />
-        <main className="flex h-full w-full flex-1 flex-col gap-2 p-2">
+        <main className="flex h-full w-full flex-1 flex-col py-2 pr-2">
+          <Header
+            contact={selectedContact}
+            onMenuClick={() => setIsSidebarOpen(true)}
+          />
           {selectedContact ? (
             <>
-              <Header
-                contact={selectedContact}
-                onMenuClick={() => setIsSidebarOpen(true)}
-              />
               <div className="flex flex-1 flex-col overflow-hidden">
                 <ChatHistory
                   ref={chatRef}
