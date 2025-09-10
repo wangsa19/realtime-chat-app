@@ -1,12 +1,25 @@
-// components/chat/ChatHistory.tsx
 import React from "react";
 import Image from "next/image";
-import { Check } from "lucide-react";
-import { Message } from "@/app/typings/chat";
+import { Check, CheckCheck } from "lucide-react";
+import { Message, MessageStatus } from "@/app/typings/chat";
+
 interface ChatHistoryProps {
   messages: Message[];
   currentUserId: string;
 }
+
+const MessageStatusIcon: React.FC<{ status: MessageStatus }> = ({ status }) => {
+  if (status === "SENT") {
+    return <Check size={16} className="ml-1 text-gray-500" />;
+  }
+  if (status === "DELIVERED") {
+    return <CheckCheck size={16} className="ml-1 text-gray-500" />;
+  }
+  if (status === "READ") {
+    return <CheckCheck size={16} className="ml-1 text-blue-500" />;
+  }
+  return null;
+};
 
 const ChatHistory = React.forwardRef<HTMLDivElement, ChatHistoryProps>(
   ({ messages, currentUserId }, ref) => {
@@ -23,7 +36,6 @@ const ChatHistory = React.forwardRef<HTMLDivElement, ChatHistoryProps>(
           messages.map((msg) => {
             const isCurrentUser = msg.user.id === currentUserId;
             if (isCurrentUser) {
-              // Pesan Terkirim (align kanan)
               return (
                 <div key={msg.id} className="flex justify-end">
                   <div className="flex flex-col items-end max-w-lg">
@@ -32,13 +44,12 @@ const ChatHistory = React.forwardRef<HTMLDivElement, ChatHistoryProps>(
                     </div>
                     <div className="flex items-center justify-end text-xs text-gray-500 mt-1">
                       <span>{msg.timestamp}</span>
-                      <Check size={14} className="ml-1" />
+                      <MessageStatusIcon status={msg.status} />
                     </div>
                   </div>
                 </div>
               );
             } else {
-              // Pesan Diterima (align kiri)
               return (
                 <div key={msg.id} className="flex items-start gap-3">
                   <Image

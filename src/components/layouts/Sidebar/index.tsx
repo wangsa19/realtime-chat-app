@@ -5,14 +5,11 @@ import Image from "next/image";
 import React, { FC, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useSession, signOut } from "next-auth/react";
-
-export interface ContactUser {
-  id: number;
-  name: string | null;
-  email: string;
-}
+import { ContactUser } from "@/app/typings/chat";
+import { Badge } from "@/components/ui/badge";
 
 interface SidebarProps {
+  contacts: ContactUser[];
   onSelectContact: (contact: ContactUser) => void;
   selectedContactId: number | null;
   isOpen: boolean;
@@ -20,28 +17,12 @@ interface SidebarProps {
 }
 
 const Sidebar: FC<SidebarProps> = ({
+  contacts,
   onSelectContact,
   selectedContactId,
   isOpen,
   onClose,
 }) => {
-  const [contacts, setContacts] = useState<ContactUser[]>([]);
-  const { data: session } = useSession();
-
-  useEffect(() => {
-    const fetchContacts = async () => {
-      if (session) {
-        try {
-          const response = await fetch("/api/contacts");
-          if (response.ok) setContacts(await response.json());
-        } catch (error) {
-          console.error("Failed to fetch contacts:", error);
-        }
-      }
-    };
-    fetchContacts();
-  }, [session]);
-
   const handleLogout = () => {
     signOut({ callbackUrl: "/signin" });
   };
@@ -55,7 +36,6 @@ const Sidebar: FC<SidebarProps> = ({
         md:translate-x-0 md:flex
       `}
     >
-      {/* Bagian Atas: Header dan Search */}
       <section className="bg-white rounded-xl shadow-md border p-4 flex items-center gap-4">
         <h2 className="font-semibold text-xl md:text-2xl">Chat</h2>
         <div className="relative flex-1">
@@ -66,7 +46,6 @@ const Sidebar: FC<SidebarProps> = ({
         </button>
       </section>
 
-      {/* Bagian Tengah: Daftar Kontak (bisa scroll) */}
       <section className="my-2 md:my-0 bg-white w-full flex-1 rounded-xl shadow-md border p-4 flex flex-col gap-2 overflow-y-auto">
         <h5 className="font-normal text-sm px-2">All Contacts</h5>
         <div className="flex flex-col gap-1 w-full">
@@ -90,19 +69,32 @@ const Sidebar: FC<SidebarProps> = ({
                 className="rounded-full flex-none"
               />
               <div className="flex-1 min-w-0">
-                <h6 className="font-semibold text-sm truncate">
-                  {contact.name || "No Name"}
-                </h6>
-                <p className="text-xs text-muted-foreground truncate">
-                  Last message...
-                </p>
+                <div className="flex justify-between items-center">
+                  <h6 className="font-semibold text-sm truncate">
+                    {contact.name || "No Name"}
+                  </h6>
+                  {contact.lastMessageTimestamp && (
+                    <span className="text-xs text-gray-400 flex-shrink-0">
+                      {contact.lastMessageTimestamp}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-muted-foreground truncate">
+                    {contact.lastMessage || "No messages yet"}
+                  </p>
+                  {contact.unreadCount! > 0 && (
+                    <Badge variant="destructive" className="flex-shrink-0">
+                      {contact.unreadCount}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Bagian Bawah: Tombol Logout */}
       <section className="bg-white rounded-xl shadow-md border p-2 mt-auto">
         <button
           onClick={handleLogout}

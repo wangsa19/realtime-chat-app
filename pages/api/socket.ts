@@ -5,6 +5,24 @@ import { NextApiResponseWithSocket } from "@/app/typings/platform";
 
 const onlineUsers = new Map<string, string>();
 
+const formatMessageForClient = (dbMessage: any) => ({
+  id: dbMessage.id.toString(),
+  text: dbMessage.content,
+  timestamp: new Date(dbMessage.timestamp).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }),
+  status: dbMessage.status,
+  user: {
+    id: dbMessage.userSender.id.toString(),
+    name: dbMessage.userSender.name!,
+    image: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      dbMessage.userSender.name || "User"
+    )}`,
+  },
+  tempId: dbMessage.tempId,
+});
+
 export default function SocketHandler(
   _req: NextApiRequest,
   res: NextApiResponseWithSocket
@@ -32,28 +50,52 @@ export default function SocketHandler(
     });
 
     socket.on("private:send", async (data) => {
-      const { receiverId, message } = data;
-
-      try {
-        await prisma.messages.create({
-          data: {
-            sender_id: Number(message.user.id),
-            receiver_id: Number(receiverId),
-            content: message.text,
-            timestamp: new Date(message.id),
-          },
-        });
-        console.log("Message saved to DB");
-      } catch (error) {
-        console.error("Failed to save message to DB:", error);
-      }
+      const { receiverId, message, tempId } = data;
+      const senderId = message.user.id;
 
       const receiverSocketId = onlineUsers.get(receiverId);
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("private:receive", message);
-        socket.emit("private:receive", message);
-      } else {
-        console.log(`User ${receiverId} is not online.`);
+      const isReceiverOnline = !!receiverSocketId;
+
+      const newMessage = await prisma.messages.create({
+        data: {
+          sender_id: Number(senderId),
+          receiver_id: Number(receiverId),
+          content: message.text,
+          timestamp: new Date(),
+          status: isReceiverOnline ? "DELIVERED" : "SENT",
+        },
+        include: { userSender: true },
+      });
+
+      const messageForReceiver = formatMessageForClient(newMessage);
+
+      const messageForSender = {
+        ...messageForReceiver,
+        tempId: tempId,
+      };
+
+      if (isReceiverOnline) {
+        io.to(receiverSocketId!).emit("private:receive", messageForReceiver);
+      }
+
+      socket.emit("private:receive", messageForSender);
+    });
+
+    socket.on("messages:mark_as_read", async ({ contactId, currentUserId }) => {
+      await prisma.messages.updateMany({
+        where: {
+          sender_id: Number(contactId),
+          receiver_id: Number(currentUserId),
+          status: { not: "READ" },
+        },
+        data: { status: "READ" },
+      });
+
+      const senderSocketId = onlineUsers.get(contactId);
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("private:read_receipt", {
+          readerId: currentUserId,
+        });
       }
     });
 

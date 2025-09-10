@@ -6,9 +6,9 @@ import { io, Socket } from "socket.io-client";
 
 import ChatHistory from "@/components/chat/ChatHistory";
 import MessageInput from "@/components/chat/MessageInput";
-import Sidebar, { ContactUser } from "@/components/layouts/Sidebar";
+import Sidebar from "@/components/layouts/Sidebar";
 import Header from "@/components/layouts/Header";
-import { Message } from "@/app/typings/chat";
+import { ContactUser, Message } from "@/app/typings/chat";
 
 let socket: Socket;
 
@@ -31,12 +31,36 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const [contacts, setContacts] = useState<ContactUser[]>([]);
+  const selectedContactRef = useRef<ContactUser | null>(null);
+
+  useEffect(() => {
+    selectedContactRef.current = selectedContact;
+  }, [selectedContact]);
 
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      if (session) {
+        try {
+          const response = await fetch("/api/contacts");
+          if (response.ok) {
+            const fetchedContacts = await response.json();
+            setContacts(
+              fetchedContacts.map((c: any) => ({ ...c, unreadCount: 0 }))
+            );
+          }
+        } catch (error) {
+          console.error("Failed to fetch contacts:", error);
+        }
+      }
+    };
+    fetchContacts();
+  }, [session]);
 
   useEffect(() => {
     const initializeSocket = async () => {
@@ -50,38 +74,108 @@ export default function Home() {
         socket.emit("user:online", session.user.id.toString());
       });
 
-      socket.on("private:receive", (newMessage: Message) => {
-        if (!newMessage || !newMessage.user) {
-          return;
+      socket.on(
+        "private:receive",
+        (newMessageFromServer: Message & { tempId?: string }) => {
+          const { tempId, ...message } = newMessageFromServer;
+          const senderId = message.user.id;
+          const currentUserId = session.user.id.toString();
+          const activeContactId = selectedContactRef.current?.id.toString();
+
+          if (tempId && senderId === currentUserId) {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === tempId ? message : m))
+            );
+          } else if (senderId === activeContactId) {
+            setMessages((prev) => [...prev, message]);
+            socket.emit("messages:mark_as_read", {
+              contactId: activeContactId,
+              currentUserId: currentUserId,
+            });
+          }
+
+          const conversationPartnerId =
+            senderId === currentUserId ? activeContactId : senderId;
+
+          if (!conversationPartnerId) return;
+
+          setContacts((prev) => {
+            const contactIndex = prev.findIndex(
+              (c) => c.id.toString() === conversationPartnerId
+            );
+            if (contactIndex === -1) return prev;
+
+            const updatedContact = { ...prev[contactIndex] };
+            updatedContact.lastMessage =
+              senderId === currentUserId
+                ? `You: ${message.text}`
+                : message.text;
+            updatedContact.lastMessageTimestamp = message.timestamp;
+
+            if (senderId !== currentUserId && senderId !== activeContactId) {
+              updatedContact.unreadCount =
+                (updatedContact.unreadCount || 0) + 1;
+            }
+            const otherContacts = prev.filter(
+              (c) => c.id.toString() !== conversationPartnerId
+            );
+            return [updatedContact, ...otherContacts];
+          });
         }
+      );
 
-        const senderId = newMessage.user.id;
-        const currentUserId = session.user.id.toString();
-        const activeContactId = selectedContact?.id.toString();
+      socket.on("private:status_update", ({ messageId, status }) => {
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg))
+        );
+      });
 
-        if (senderId === activeContactId || senderId === currentUserId) {
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
+      socket.on("private:read_receipt", ({ readerId }) => {
+        if (readerId === selectedContactRef.current?.id.toString()) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.user.id === session.user.id.toString() &&
+              msg.status !== "READ"
+                ? { ...msg, status: "READ" }
+                : msg
+            )
+          );
         }
       });
 
       return () => {
-        if (socket) socket.disconnect();
+        if (socket && socket.connected) {
+          console.log("Disconnecting socket...");
+          socket.disconnect();
+          // @ts-ignore
+          socket = null;
+        }
       };
     };
 
     initializeSocket();
-  }, [status, session, selectedContact]);
+  }, [status, session]);
 
   const handleSelectContact = async (contact: ContactUser) => {
     setSelectedContact(contact);
     setMessages([]);
     setIsSidebarOpen(false);
 
+    setContacts((prev) =>
+      prev.map((c) => (c.id === contact.id ? { ...c, unreadCount: 0 } : c))
+    );
+
     try {
       const response = await fetch(`/api/messages/${contact.id}`);
       if (response.ok) {
         const historyMessages = await response.json();
         setMessages(historyMessages);
+        if (socket) {
+          socket.emit("messages:mark_as_read", {
+            contactId: contact.id.toString(),
+            currentUserId: session?.user.id.toString(),
+          });
+        }
       }
     } catch (error) {
       console.error("Failed to fetch message history:", error);
@@ -90,26 +184,33 @@ export default function Home() {
 
   const handleSendMessage = () => {
     if (inputValue.trim() && socket && session?.user && selectedContact) {
-      const newMessage = {
-        receiverId: selectedContact.id.toString(),
-        message: {
-          id: new Date().toISOString(),
-          text: inputValue,
-          timestamp: new Date().toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          user: {
-            id: session.user.id.toString(),
-            name: session.user.name!,
-            image:
-              session.user.image ||
-              `https://i.pravatar.cc/150?u=${session.user.id}`,
-          },
+      const tempId = new Date().toISOString();
+      const messageObject: Message = {
+        id: tempId,
+        text: inputValue,
+        timestamp: new Date().toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        status: "SENT",
+        user: {
+          id: session.user.id.toString(),
+          name: session.user.name!,
+          image:
+            session.user.image ||
+            `https://i.pravatar.cc/150?u=${session.user.id}`,
         },
       };
 
-      socket.emit("private:send", newMessage);
+      setMessages((prev) => [...prev, messageObject]);
+
+      const payload = {
+        receiverId: selectedContact.id.toString(),
+        message: messageObject,
+        tempId: tempId,
+      };
+
+      socket.emit("private:send", payload);
       setInputValue("");
     }
   };
@@ -146,6 +247,7 @@ export default function Home() {
       )}
       <div className="flex h-full">
         <Sidebar
+          contacts={contacts}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
           onSelectContact={handleSelectContact}
