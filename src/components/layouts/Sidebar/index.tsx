@@ -24,7 +24,7 @@ const Sidebar: FC<SidebarProps> = ({
   onClose,
 }) => {
   const handleLogout = () => {
-    signOut({ callbackUrl: "/signin" });
+    signOut({ callbackUrl: "/auth/signin" });
   };
 
   return (
@@ -37,7 +37,7 @@ const Sidebar: FC<SidebarProps> = ({
       `}
     >
       <section className="bg-white rounded-xl shadow-md border p-4 flex items-center gap-4">
-        <h2 className="font-semibold text-xl md:text-2xl">Chat</h2>
+            <span className="text-xl font-bold text-orange-500">ChatFlow</span>
         <div className="relative flex-1">
           <Input placeholder="Search" className="h-12 rounded-full px-4" />
         </div>
@@ -47,7 +47,7 @@ const Sidebar: FC<SidebarProps> = ({
       </section>
 
       <section className="my-2 md:my-0 bg-white w-full flex-1 rounded-xl shadow-md border p-4 flex flex-col gap-2 overflow-y-auto">
-        <h5 className="font-normal text-sm px-2">All Contacts</h5>
+        <h5 className="font-medium text-sm px-2">All Contacts</h5>
         <div className="flex flex-col gap-1 w-full">
           {contacts.map((contact) => (
             <div

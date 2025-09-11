@@ -5,7 +5,7 @@ import React, { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Menu, MoreHorizontal, SearchIcon } from "lucide-react";
-import { ContactUser } from "../Sidebar";
+import { ContactUser } from "@/app/typings/chat";
 
 interface HeaderProps {
   contact?: ContactUser | null; // <-- Jadikan prop contact opsional
@@ -61,7 +61,7 @@ const Header: FC<HeaderProps> = ({ contact, onMenuClick }) => {
             >
               Profile
             </Button>
-            <Button className="h-12 rounded-full bg-black px-4 font-medium hover:bg-black/90 md:w-24">
+            <Button className="h-12 rounded-full bg-orange-500 px-4 font-medium hover:bg-orange-500/90 md:w-24">
               Call
             </Button>
             <div className="h-5">

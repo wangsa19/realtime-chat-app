@@ -31,7 +31,7 @@ export default function SignUpPage() {
       }
       
       // Jika berhasil, arahkan ke halaman login
-      router.push("/signin");
+      router.push("/auth/signin");
 
     } catch (err: any) {
       setError(err.message);
@@ -69,7 +69,7 @@ export default function SignUpPage() {
         </form>
          <p className="text-sm text-center text-gray-600">
           Already have an account?{" "}
-          <Link href="/signin" className="font-medium text-orange-600 hover:underline">
+          <Link href="/auth/signin" className="font-medium text-orange-600 hover:underline">
             Login here
           </Link>
         </p>

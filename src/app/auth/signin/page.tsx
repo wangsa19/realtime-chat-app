@@ -30,7 +30,7 @@ export default function SignInPage() {
         setError("Invalid email or password. Please try again.");
         setIsLoading(false);
       } else if (result?.ok) {
-        router.push("/");
+        router.push("/chat");
         router.refresh();
       }
     } catch (error) {
@@ -100,7 +100,7 @@ export default function SignInPage() {
         <p className="text-sm text-center text-gray-600">
           Don't have an account?{" "}
           <Link
-            href="/signup"
+            href="/auth/signup"
             className="font-medium text-orange-600 hover:underline"
           >
             Register here
